@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image } from '@/components/ui/image';
 
-const PORTRAIT = 'https://media.base44.com/images/public/6a7e1de32b26888cf5755e75/83dd16a7f_generated_c138818f.png';
+const PORTRAIT = '/images/Zingy.jpeg';
 const ARCH = 'https://media.base44.com/images/public/6a7e1de32b26888cf5755e75/2d605f5db_generated_7814401f.png';
 
 const STATS = [
@@ -48,12 +48,13 @@ export default function Heritage() {
         </div>
 
         <div className="lg:col-span-7 grid grid-cols-2 gap-4 reveal">
-          <div className="col-span-2 h-64 sm:h-80 overflow-hidden">
+          <div className="col-span-2 h-96 sm:h-[28rem] overflow-hidden">
             <Image
               src={PORTRAIT}
               alt="A Mhlanga SS student in uniform against the Eastern Cape hills"
               fittingType="fill"
               className="w-full h-full object-cover reveal-img"
+              style={{ objectPosition: '30% 35%' }}
             />
           </div>
           <div className="h-48 overflow-hidden">
