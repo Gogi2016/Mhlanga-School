@@ -3,8 +3,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 const DATA = [
   { year: '2023', enrollment: 96, passRate: 89 },
-  { year: '2024', enrollment: 104, passRate: 98 },
-  { year: '2025', enrollment: 112, passRate: 96 },
+  { year: '2024', enrollment: 104, passRate: 96 },
+  { year: '2025', enrollment: 112, passRate: 98 },
 ];
 
 function CustomTooltip({ active, payload, label }) {

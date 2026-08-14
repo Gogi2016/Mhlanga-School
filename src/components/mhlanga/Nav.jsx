@@ -7,6 +7,7 @@ const LINKS = [
   { label: 'Curriculum', href: '#curriculum' },
   { label: 'Gallery', to: '/gallery' },
   { label: 'Contact', href: '#contact' },
+  { label: 'Track Application', to: '/track-application' },
 ];
 
 export default function Nav() {
