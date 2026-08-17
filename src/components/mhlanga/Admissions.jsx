@@ -1,22 +1,7 @@
 import React, { useRef, useState } from 'react';
-import {
-  Check,
-  FileText,
-  Upload,
-  X,
-  User,
-  Calendar,
-  Mail,
-  Phone,
-  MapPin,
-  Users,
-  GraduationCap,
-  CreditCard,
-  AlertCircle,
-} from 'lucide-react';
-
-import { supabase } from '../../lib/Supabase';
+import { Check, FileText, Upload, X, User, Calendar, Mail, Phone, MapPin, Users, GraduationCap, CreditCard, AlertCircle,} from 'lucide-react';
 import { sendApplicationReceivedEmail } from '../../lib/Emailjs';
+import { supabasePublic as supabase } from '../../lib/Supabase';
 
 const EMPTY = {
   fullName: '',
@@ -125,6 +110,11 @@ const STREAMS = [
 // --------------------------------------------------
 
 const validators = {
+  dob: (v) => {
+    if (!v) return 'Date of birth is required';
+    return '';
+  },
+
   idNumber: (v) => {
     if (!v) return 'ID number is required';
 
@@ -159,6 +149,26 @@ const validators = {
     return '';
   },
 
+  homeAddress: (v) => {
+    if (!v) return 'Home address is required';
+    return '';
+  },
+
+  race: (v) => {
+    if (!v) return 'Race is required';
+    return '';
+  },
+
+  gender: (v) => {
+    if (!v) return 'Gender is required';
+    return '';
+  },
+
+  guardianId: (v) => {
+    if (!v) return "Guardian's ID number is required";
+    return '';
+  },
+
   guardianContactNo: (v) => {
     if (!v) return 'Guardian contact number is required';
 
@@ -168,6 +178,11 @@ const validators = {
       return 'Enter a valid SA number, e.g. 072 915 5354';
     }
 
+    return '';
+  },
+
+  juneResults: (v) => {
+    if (!v) return 'June results are required';
     return '';
   },
 };
@@ -276,21 +291,38 @@ export default function Admissions() {
   // Form validation
   // --------------------------------------------------
 
-  const validationOk =
-    !errorFor('idNumber') &&
-    !errorFor('email') &&
-    !errorFor('contactNo') &&
-    !errorFor('guardianContactNo');
+  const REQUIRED_KEYS = [
+    'dob',
+    'idNumber',
+    'email',
+    'contactNo',
+    'homeAddress',
+    'race',
+    'gender',
+    'guardianId',
+    'guardianContactNo',
+    'juneResults',
+  ];
+
+  const validationOk = REQUIRED_KEYS.every(
+    (key) => !errorFor(key)
+  );
 
   const canSubmit =
     data.fullName &&
+    data.dob &&
     data.idNumber &&
     data.email &&
     data.contactNo &&
+    data.homeAddress &&
+    data.race &&
+    data.gender &&
     data.guardianName &&
+    data.guardianId &&
     data.guardianContactNo &&
     data.gradeApplying &&
     (!needsStream || data.stream) &&
+    data.juneResults &&
     validationOk;
 
   // --------------------------------------------------
@@ -301,10 +333,16 @@ export default function Admissions() {
     event.preventDefault();
 
     setTouched({
+      dob: true,
       idNumber: true,
       email: true,
       contactNo: true,
+      homeAddress: true,
+      race: true,
+      gender: true,
+      guardianId: true,
       guardianContactNo: true,
+      juneResults: true,
     });
 
     setSubmitError('');
@@ -408,13 +446,15 @@ export default function Admissions() {
         );
       }
 
-      // ----------------------------------------------
+    // ----------------------------------------------
       // Send confirmation email
       // ----------------------------------------------
+
       const streamLabel = data.stream
-        ? STREAMS.find((s) => s.code === data.stream)?.name
-          ? `${data.stream} · ${STREAMS.find((s) => s.code === data.stream).name}`
-          : data.stream
+        ? (() => {
+            const match = STREAMS.find((s) => s.code === data.stream);
+            return match ? `${match.code} · ${match.name}` : data.stream;
+          })()
         : 'N/A';
 
       const emailResult =
@@ -423,6 +463,7 @@ export default function Admissions() {
           toName: data.fullName,
           ref,
           gradeApplying: data.gradeApplying,
+          stream: streamLabel,
         });
 
       if (!emailResult.ok) {
@@ -575,7 +616,9 @@ export default function Admissions() {
                     <input
                       ref={dobInputRef}
                       type="date"
-                      className="line-input"
+                      className={`line-input ${
+                        showError('dob') ? 'border-b-[#D27D2D]' : ''
+                      }`}
                       style={{
                         paddingLeft: '1.75rem',
                       }}
@@ -586,9 +629,17 @@ export default function Admissions() {
                           event.target.value
                         )
                       }
+                      onBlur={() => touch('dob')}
                       onClick={openDatePicker}
                     />
                   </div>
+
+                  {showError('dob') && (
+                    <p className="flex items-center gap-1.5 text-xs text-[#D27D2D] mt-1.5">
+                      <AlertCircle size={12} />
+                      {showError('dob')}
+                    </p>
+                  )}
                 </div>
 
               </div>
@@ -666,7 +717,12 @@ export default function Admissions() {
                       value
                     )
                   }
+                  onBlur={() =>
+                    touch('homeAddress')
+                  }
                   placeholder="Enter your home address"
+                  required
+                  error={showError('homeAddress')}
                 />
 
               </div>
@@ -679,7 +735,10 @@ export default function Admissions() {
                   onChange={(value) =>
                     set('race', value)
                   }
+                  onBlur={() => touch('race')}
                   options={RACE_OPTIONS}
+                  required
+                  error={showError('race')}
                 />
 
                 <SelectField
@@ -688,7 +747,10 @@ export default function Admissions() {
                   onChange={(value) =>
                     set('gender', value)
                   }
+                  onBlur={() => touch('gender')}
                   options={GENDER_OPTIONS}
+                  required
+                  error={showError('gender')}
                 />
 
               </div>
@@ -732,7 +794,12 @@ export default function Admissions() {
                         .slice(0, 13)
                     )
                   }
+                  onBlur={() =>
+                    touch('guardianId')
+                  }
                   placeholder="Guardian's ID number"
+                  required
+                  error={showError('guardianId')}
                 />
 
               </div>
@@ -902,6 +969,11 @@ export default function Admissions() {
                       value
                     )
                   }
+                  onBlur={() =>
+                    touch('juneResults')
+                  }
+                  required
+                  error={showError('juneResults')}
                 />
 
                 <TextAreaField
@@ -1076,17 +1148,14 @@ export default function Admissions() {
               )}
 
               <button
-                type="submit"
-                disabled={
-                  !canSubmit ||
-                  submitting
-                }
-                className="portal-btn font-display text-sm tracking-wide px-9 py-4 bg-[#00A3AD] text-[#121416] disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                {submitting
-                  ? 'Submitting Application...'
-                  : 'Submit Application →'}
-              </button>
+  type="submit"
+  disabled={submitting}
+  className="portal-btn font-display text-sm tracking-wide px-9 py-4 bg-[#00A3AD] text-[#121416] disabled:opacity-30 disabled:cursor-not-allowed"
+>
+  {submitting
+    ? 'Submitting Application...'
+    : 'Submit Application →'}
+</button>
 
             </div>
 
@@ -1222,25 +1291,43 @@ function TextAreaField({
   label,
   value,
   onChange,
+  onBlur,
+  required,
+  error,
 }) {
   return (
     <div>
 
       <label className="text-xs tracking-widest uppercase text-[#F4F4F4]/50 mb-2 block">
-        {label}
+        {label}{' '}
+        {required && (
+          <span className="text-[#D27D2D]">
+            *
+          </span>
+        )}
       </label>
 
       <textarea
         rows={4}
-        className="w-full bg-[#0A0B0C] border border-white/20 focus:border-[#00A3AD] focus:outline-none text-[#F4F4F4] placeholder:text-[#F4F4F4]/30 px-3 py-2.5 text-sm resize-y transition-colors"
+        className={`w-full bg-[#0A0B0C] border ${
+          error ? 'border-[#D27D2D]/60' : 'border-white/20'
+        } focus:border-[#00A3AD] focus:outline-none text-[#F4F4F4] placeholder:text-[#F4F4F4]/30 px-3 py-2.5 text-sm resize-y transition-colors`}
         value={value}
         onChange={(event) =>
           onChange(
             event.target.value
           )
         }
+        onBlur={onBlur}
         placeholder="e.g. Mathematics - 78%"
       />
+
+      {error && (
+        <p className="flex items-center gap-1.5 text-xs text-[#D27D2D] mt-1.5">
+          <AlertCircle size={12} />
+          {error}
+        </p>
+      )}
 
     </div>
   );
@@ -1254,8 +1341,10 @@ function SelectField({
   label,
   value,
   onChange,
+  onBlur,
   options,
   required,
+  error,
 }) {
   return (
     <div>
@@ -1273,13 +1362,16 @@ function SelectField({
       </label>
 
       <select
-        className="line-input bg-transparent"
+        className={`line-input bg-transparent ${
+          error ? 'border-b-[#D27D2D]' : ''
+        }`}
         value={value}
         onChange={(event) =>
           onChange(
             event.target.value
           )
         }
+        onBlur={onBlur}
       >
 
         {options.map((option) => (
@@ -1293,6 +1385,13 @@ function SelectField({
         ))}
 
       </select>
+
+      {error && (
+        <p className="flex items-center gap-1.5 text-xs text-[#D27D2D] mt-1.5">
+          <AlertCircle size={12} />
+          {error}
+        </p>
+      )}
 
     </div>
   );

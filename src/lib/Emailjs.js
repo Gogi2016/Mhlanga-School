@@ -35,12 +35,14 @@ function ensureInit() {
  * {{to_name}}
  * {{ref_number}}
  * {{grade_applying}}
+ * {{stream}}
  */
 export async function sendApplicationReceivedEmail({
   toEmail,
   toName,
   ref,
   gradeApplying,
+  stream,
 }) {
   try {
     ensureInit();
@@ -68,6 +70,7 @@ export async function sendApplicationReceivedEmail({
     console.log('Name:', toName);
     console.log('Reference:', ref);
     console.log('Grade:', gradeApplying);
+    console.log('Stream:', stream || 'N/A');
 
     const response = await emailjs.send(
       SERVICE_ID,
@@ -77,6 +80,7 @@ export async function sendApplicationReceivedEmail({
         to_name: toName,
         ref_number: ref,
         grade_applying: gradeApplying,
+        stream: stream || 'N/A',
       }
     );
 
@@ -113,6 +117,8 @@ export async function sendApplicationReceivedEmail({
  * {{ref_number}}
  * {{status}}
  * {{admission_number}}
+ * {{grade_applying}}
+ * {{stream}}
  */
 export async function sendStatusUpdateEmail({
   toEmail,
@@ -120,6 +126,8 @@ export async function sendStatusUpdateEmail({
   ref,
   status,
   admissionNumber,
+  gradeApplying,
+  stream,
 }) {
   try {
     ensureInit();
@@ -151,6 +159,8 @@ export async function sendStatusUpdateEmail({
       'Admission Number:',
       admissionNumber || 'N/A'
     );
+    console.log('Grade:', gradeApplying || 'N/A');
+    console.log('Stream:', stream || 'N/A');
 
     const response = await emailjs.send(
       SERVICE_ID,
@@ -162,6 +172,8 @@ export async function sendStatusUpdateEmail({
         status,
         admission_number:
           admissionNumber || 'N/A',
+        grade_applying: gradeApplying || 'N/A',
+        stream: stream || 'N/A',
       }
     );
 

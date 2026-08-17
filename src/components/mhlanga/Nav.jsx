@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Lock } from 'lucide-react';
 
 const LINKS = [
   { label: 'About', href: '#about' },
@@ -56,6 +56,13 @@ export default function Nav() {
           >
             Apply 2026
           </Link>
+          <Link
+            to="/admin/login"
+            aria-label="Admin login"
+            className="text-[#F4F4F4]/40 hover:text-[#00A3AD] transition-colors"
+          >
+            <Lock size={16} />
+          </Link>
         </div>
 
         <button className="md:hidden text-[#F4F4F4]" onClick={() => setOpen((o) => !o)} aria-label="Menu">
@@ -68,6 +75,9 @@ export default function Nav() {
           {LINKS.map((l) => renderItem(l, () => setOpen(false)))}
           <Link to="/admissions" onClick={() => setOpen(false)} className="text-sm font-semibold uppercase tracking-widest text-[#00A3AD]">
             Apply 2026
+          </Link>
+          <Link to="/admin/login" onClick={() => setOpen(false)} className="text-sm text-[#F4F4F4]/50 flex items-center gap-2">
+            <Lock size={14} /> Admin
           </Link>
         </div>
       )}

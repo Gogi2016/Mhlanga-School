@@ -5,10 +5,14 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import ScrollToTop from './components/ScrollToTop';
 import AdmissionsBanner from './components/AdmissionsBanner';
+import AdminRoute from './components/AdminRoute';
 // Add page imports here
 import Home from '@/pages/Home';
 import Gallery from '@/pages/Gallery';
 import AdmissionsPage from '@/pages/AdmissionsPage';
+import TrackApplication from '@/pages/TrackApplication';
+import AdminLogin from '@/pages/AdminLogin';
+import AdminDashboard from '@/pages/AdminDashboard';
 
 function App() {
   return (
@@ -21,6 +25,16 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/admissions" element={<AdmissionsPage />} />
+            <Route path="/track-application" element={<TrackApplication />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
             <Route path="*" element={<PageNotFound />} />
           </Routes>
         </div>
