@@ -28,7 +28,7 @@ export default function Footer() {
             <h3 className="font-display text-lg mb-6">Get In Touch</h3>
             <div className="space-y-6 text-sm">
               <ContactRow icon={<MapPin size={16} />} label="Principal's Office" value="Mtontsasa Circuit · Lusikisiki District · Eastern Cape" />
-              <ContactRow icon={<Phone size={16} />} label="Mobile" value="+27 72 915 5354" />
+              <ContactRow icon={<Phone size={16} />} label="Mobile" value="+27 71 000 0000" />
               <ContactRow icon={<Mail size={16} />} label="Email" value="principal27@ecschools.org.za" />
             </div>
           </div>
