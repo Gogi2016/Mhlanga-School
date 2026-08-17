@@ -5,6 +5,88 @@ import * as XLSX from 'xlsx';
 import { supabase } from '@/lib/Supabase';
 import { sendStatusUpdateEmail } from '@/lib/Emailjs';
 
+function AdmissionsCycleControl() {
+  const [settings, setSettings] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [yearInput, setYearInput] = useState('');
+
+  useEffect(() => {
+    const load = async () => {
+      const { data, error } = await supabase
+        .from('admissions_settings')
+        .select('intake_year, is_open')
+        .eq('id', 1)
+        .single();
+
+      if (!error && data) {
+        setSettings(data);
+        setYearInput(String(data.intake_year));
+      }
+    };
+    load();
+  }, []);
+
+  const save = async (updates) => {
+    setSaving(true);
+    try {
+      const { data, error } = await supabase
+        .from('admissions_settings')
+        .update(updates)
+        .eq('id', 1)
+        .select()
+        .single();
+
+      if (error) throw error;
+      setSettings(data);
+    } catch (err) {
+      console.error('Failed to update admissions settings:', err);
+      alert('Failed to update admissions settings.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!settings) return null;
+
+  return (
+    <div className="border border-white/10 bg-white/[0.015] px-5 py-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="flex items-center gap-3">
+        <span className="text-xs tracking-widest uppercase text-[#F4F4F4]/50">Intake Year</span>
+        <input
+          type="number"
+          value={yearInput}
+          onChange={(e) => setYearInput(e.target.value)}
+          className="line-input w-24"
+        />
+        <button
+          disabled={saving || Number(yearInput) === settings.intake_year}
+          onClick={() => save({ intake_year: Number(yearInput) })}
+          className="text-xs tracking-widest uppercase px-3 py-2 border border-[#00A3AD]/50 text-[#00A3AD] hover:bg-[#00A3AD]/10 disabled:opacity-30"
+        >
+          Update Year
+        </button>
+      </div>
+
+      <div className="flex items-center gap-3 sm:ml-auto">
+        <span className="text-xs tracking-widest uppercase text-[#F4F4F4]/50">
+          Status: {settings.is_open ? 'Open' : 'Closed'}
+        </span>
+        <button
+          disabled={saving}
+          onClick={() => save({ is_open: !settings.is_open })}
+          className={`text-xs tracking-widest uppercase px-4 py-2 border transition-colors ${
+            settings.is_open
+              ? 'border-[#D27D2D]/50 text-[#D27D2D] hover:bg-[#D27D2D]/10'
+              : 'border-[#00A3AD]/50 text-[#00A3AD] hover:bg-[#00A3AD]/10'
+          }`}
+        >
+          {settings.is_open ? 'Close Admissions' : 'Open Admissions'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const STATUS_OPTIONS = [
   'Application submitted',
   'Under Review',
@@ -34,6 +116,7 @@ const statusColor = (status) => {
       return 'text-[#F4F4F4]/70 border-white/20';
   }
 };
+
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -105,14 +188,15 @@ export default function AdminDashboard() {
       const streamLabel = app.stream ? STREAM_LABELS[app.stream] || app.stream : 'N/A';
 
       const emailResult = await sendStatusUpdateEmail({
-        toEmail: app.email,
-        toName: app.full_name,
-        ref: app.reference_number,
-        status: newStatus,
-        admissionNumber: app.reference_number,
-        gradeApplying: app.grade_applying,
-        stream: streamLabel,
-      });
+  toEmail: app.email,
+  toName: app.full_name,
+  ref: app.reference_number,
+  intakeYear: app.intake_year,
+  status: newStatus,
+  admissionNumber: app.reference_number,
+  gradeApplying: app.grade_applying,
+  stream: streamLabel,
+});
 
       if (!emailResult.ok) {
         console.warn('Status updated, but email failed to send:', emailResult.error);
@@ -143,7 +227,7 @@ export default function AdminDashboard() {
           : '';
 
       return {
-        'Reference Number': app.reference_number || '',
+        'Admission Number': app.reference_number || '',
         'Full Name': app.full_name || '',
         'Date of Birth': app.date_of_birth || '',
         'ID Number': app.id_number || '',
@@ -156,10 +240,8 @@ export default function AdminDashboard() {
         'Guardian ID': app.guardian_id || '',
         'Guardian Contact Number': app.guardian_contact_number || '',
         'Grade Applying': app.grade_applying || '',
+        'Intake Year': app.intake_year || '',
         'Stream': streamLabel,
-        'June Results': app.june_results || '',
-        'December Results': app.december_results || '',
-        'Documents': documentsList,
         'Status': app.status || '',
         'Submitted At': app.submitted_at ? new Date(app.submitted_at).toLocaleString('en-ZA') : '',
       };
@@ -203,6 +285,11 @@ export default function AdminDashboard() {
       </header>
 
       <main className="px-5 sm:px-8 py-8 max-w-7xl mx-auto">
+        {/* Admissions cycle controls — intake year + open/closed toggle.
+            This drives Admissions.jsx and AdmissionsBanner.jsx everywhere
+            else in the app via the admissions_settings row. */}
+        <AdmissionsCycleControl />
+
         <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-8">
           <StatCard label="All" count={applications.length} active={statusFilter === 'All'} onClick={() => setStatusFilter('All')} />
           {STATUS_OPTIONS.map((s) => (
@@ -303,7 +390,7 @@ function ApplicationRow({ app, updating, onStatusChange }) {
         <div className="flex-1 min-w-0">
           <div className="font-display text-base tracking-tight truncate">{app.full_name}</div>
           <div className="text-xs text-[#F4F4F4]/45 mt-0.5">
-            {app.reference_number} · {app.grade_applying}
+            {app.reference_number} · Intake {app.intake_year} · {app.grade_applying}
             {streamLabel ? ` · ${streamLabel}` : ''}
           </div>
         </div>
@@ -339,7 +426,8 @@ function ApplicationRow({ app, updating, onStatusChange }) {
           <div className="pt-4 border-t border-white/10">
             <h4 className="text-[10px] tracking-widest uppercase text-[#00A3AD]/80 mb-3">Academic Information</h4>
             <div className={`grid grid-cols-1 ${streamLabel ? 'sm:grid-cols-2' : ''} gap-4 text-sm mb-4`}>
-              <Detail label="Grade Applying" value={app.grade_applying} />
+             <Detail label="Grade Applying" value={app.grade_applying} />
+              <Detail label="Intake Year" value={app.intake_year} />
               {streamLabel && <Detail label="Stream" value={streamLabel} />}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">

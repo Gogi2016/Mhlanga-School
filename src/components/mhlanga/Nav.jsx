@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X, Lock } from 'lucide-react';
+import { useAdmissionsSettings } from '@/hooks/useAdmissionsSettings';
 
 const LINKS = [
   { label: 'About', href: '#about' },
@@ -13,6 +14,7 @@ const LINKS = [
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const { settings, loading } = useAdmissionsSettings();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -30,6 +32,32 @@ export default function Nav() {
         {l.label}
       </a>
     );
+
+  // Apply button reflects the live admin-controlled cycle — it is never
+  // hardcoded. While settings are loading we show nothing rather than a
+  // stale "Apply" so we don't flash an open state that might be wrong.
+  const isOpen = !loading && settings?.is_open;
+
+  const renderApplyButton = (onClick) => {
+    if (loading || !settings) return null;
+
+    return isOpen ? (
+      <Link
+        to="/admissions"
+        onClick={onClick}
+        className="portal-btn text-xs font-semibold uppercase tracking-widest px-5 py-3 border border-[#00A3AD] text-[#00A3AD] hover:bg-[#00A3AD] hover:text-[#121416]"
+      >
+        Apply For {settings.intake_year}
+      </Link>
+    ) : (
+      <span
+        title={`${settings.intake_year} admissions are currently closed`}
+        className="text-xs font-semibold uppercase tracking-widest px-5 py-3 border border-white/15 text-[#F4F4F4]/40 inline-flex items-center gap-2 cursor-not-allowed"
+      >
+        Applications Closed
+      </span>
+    );
+  };
 
   return (
     <nav
@@ -50,12 +78,7 @@ export default function Nav() {
 
         <div className="hidden md:flex items-center gap-9">
           {LINKS.map((l) => renderItem(l))}
-          <Link
-            to="/admissions"
-            className="portal-btn text-xs font-semibold uppercase tracking-widest px-5 py-3 border border-[#00A3AD] text-[#00A3AD] hover:bg-[#00A3AD] hover:text-[#121416]"
-          >
-            Apply 2026
-          </Link>
+          {renderApplyButton()}
           <Link
             to="/admin/login"
             aria-label="Admin login"
@@ -73,9 +96,7 @@ export default function Nav() {
       {open && (
         <div className="md:hidden basalt-bg border-t border-white/5 px-5 py-5 flex flex-col gap-4">
           {LINKS.map((l) => renderItem(l, () => setOpen(false)))}
-          <Link to="/admissions" onClick={() => setOpen(false)} className="text-sm font-semibold uppercase tracking-widest text-[#00A3AD]">
-            Apply 2026
-          </Link>
+          {renderApplyButton(() => setOpen(false))}
           <Link to="/admin/login" onClick={() => setOpen(false)} className="text-sm text-[#F4F4F4]/50 flex items-center gap-2">
             <Lock size={14} /> Admin
           </Link>

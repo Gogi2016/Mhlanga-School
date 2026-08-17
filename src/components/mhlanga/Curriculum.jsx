@@ -108,7 +108,7 @@ export default function Curriculum() {
               to="/admissions"
               className="inline-block font-display text-sm tracking-wide px-7 py-4 bg-[#121416] text-[#F4F4F4] hover:bg-[#00A3AD] hover:text-[#121416] transition-colors"
             >
-              APPLY FOR 2027 →
+              APPLY NOW →
             </Link>
           </div>
         </div>

@@ -5,9 +5,9 @@ const PORTRAIT = '/images/Zingy.jpeg';
 const ARCH = 'https://media.base44.com/images/public/6a7e1de32b26888cf5755e75/2d605f5db_generated_7814401f.png';
 
 const STATS = [
-  { value: '2018', label: 'Grade 12 pass rate legacy' },
-  { value: '3', label: 'Academic streams' },
-  { value: '80+', label: 'Learners supported annually' },
+  { value: '98%', label: 'Grade 12 pass rate' },
+  { value: '4', label: 'Academic streams' },
+  { value: '200+', label: 'Learners supported annually' },
   { value: 'No-Fee', label: 'Public school institution' },
 ];
 

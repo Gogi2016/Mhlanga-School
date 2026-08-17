@@ -1,7 +1,24 @@
-import React, { useRef, useState } from 'react';
-import { Check, FileText, Upload, X, User, Calendar, Mail, Phone, MapPin, Users, GraduationCap, CreditCard, AlertCircle,} from 'lucide-react';
-import { sendApplicationReceivedEmail } from '../../lib/Emailjs';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Check,
+  FileText,
+  Upload,
+  X,
+  User,
+  Calendar,
+  Mail,
+  Phone,
+  MapPin,
+  Users,
+  GraduationCap,
+  CreditCard,
+  AlertCircle,
+  Loader2,
+  Lock,
+} from 'lucide-react';
+
 import { supabasePublic as supabase } from '../../lib/Supabase';
+import { sendApplicationReceivedEmail } from '../../lib/Emailjs';
 
 const EMPTY = {
   fullName: '',
@@ -208,6 +225,44 @@ export default function Admissions() {
 
   const dobInputRef = useRef(null);
 
+  // --------------------------------------------------
+  // Admissions cycle settings (intake year / open-closed)
+  // --------------------------------------------------
+
+  const [settings, setSettings] = useState(null);
+
+  const [settingsLoading, setSettingsLoading] = useState(true);
+
+  const [settingsError, setSettingsError] = useState('');
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      setSettingsLoading(true);
+      setSettingsError('');
+
+      try {
+        const { data: row, error } = await supabase
+          .from('admissions_settings')
+          .select('intake_year, is_open')
+          .eq('id', 1)
+          .single();
+
+        if (error) throw error;
+
+        setSettings(row);
+      } catch (err) {
+        console.error('Failed to load admissions settings:', err);
+        setSettingsError(
+          'Unable to load admissions information right now. Please refresh the page or try again later.'
+        );
+      } finally {
+        setSettingsLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
   const set = (key, value) => {
     setData((current) => ({
       ...current,
@@ -347,17 +402,67 @@ export default function Admissions() {
 
     setSubmitError('');
 
-    if (!canSubmit || submitting) {
+    if (!canSubmit || submitting || !settings) {
       return;
     }
 
     setSubmitting(true);
 
     try {
-      // Generate application reference
-      const ref =
-        'MSS-' +
-        Date.now().toString().slice(-6);
+      // ----------------------------------------------
+      // Eligibility pre-check: already admitted, or
+      // already applied for this intake year.
+      // ----------------------------------------------
+
+      const { data: eligibility, error: eligibilityError } =
+        await supabase.rpc('check_application_eligibility', {
+          p_id_number: data.idNumber,
+          p_intake_year: settings.intake_year,
+        });
+
+      if (eligibilityError) {
+        console.error('Eligibility check failed:', eligibilityError);
+        throw new Error(
+          'Unable to verify your application eligibility. Please try again.'
+        );
+      }
+
+      const result = Array.isArray(eligibility)
+        ? eligibility[0]
+        : eligibility;
+
+      if (result && result.allowed === false) {
+        throw new Error(
+          result.reason ||
+            'You are not able to submit a new application at this time.'
+        );
+      }
+
+      // Generate application admission no
+      // ----------------------------------------------
+      // Get or create the applicant's permanent
+      // admission number (tied to their ID number).
+      // The same number is reused for every future
+      // application — applicants never get more than
+      // one admission number.
+      // ----------------------------------------------
+
+      const { data: admissionNumber, error: admissionNumberError } =
+        await supabase.rpc('get_or_create_admission_number', {
+          p_id_number: data.idNumber,
+        });
+
+      if (admissionNumberError || !admissionNumber) {
+        console.error(
+          'Failed to get/create admission number:',
+          admissionNumberError
+        );
+        throw new Error(
+          'Unable to generate your admission number. Please try again.'
+        );
+      }
+
+      const ref = admissionNumber;
 
       // Prepare application for Supabase
       const application = {
@@ -409,6 +514,9 @@ export default function Admissions() {
         status:
           'Application submitted',
 
+        intake_year:
+          settings.intake_year,
+
         submitted_at:
           new Date().toISOString(),
       };
@@ -440,6 +548,24 @@ export default function Admissions() {
           error
         );
 
+        // Friendly messages for the DB-level backstops,
+        // in case the RPC pre-check above was bypassed
+        // or raced by a duplicate submission.
+        if (error.code === '23505') {
+          throw new Error(
+            `You have already submitted an application for the ${settings.intake_year} intake. Use "Track Application" to check its status.`
+          );
+        }
+
+        if (
+          error.message &&
+          error.message.includes('ALREADY_ADMITTED')
+        ) {
+          throw new Error(
+            'You have already been admitted to Mhlanga Senior Secondary School and cannot submit a new application.'
+          );
+        }
+
         throw new Error(
           error.message ||
             'Unable to save your application.'
@@ -458,13 +584,14 @@ export default function Admissions() {
         : 'N/A';
 
       const emailResult =
-        await sendApplicationReceivedEmail({
-          toEmail: data.email,
-          toName: data.fullName,
-          ref,
-          gradeApplying: data.gradeApplying,
-          stream: streamLabel,
-        });
+  await sendApplicationReceivedEmail({
+    toEmail: data.email,
+    toName: data.fullName,
+    ref,
+    intakeYear: settings.intake_year,
+    gradeApplying: data.gradeApplying,
+    stream: streamLabel,
+  });
 
       if (!emailResult.ok) {
         console.warn(
@@ -534,6 +661,65 @@ export default function Admissions() {
     }
   };
 
+  // --------------------------------------------------
+  // Loading / closed states
+  // --------------------------------------------------
+
+  if (settingsLoading) {
+    return (
+      <section
+        id="apply"
+        className="relative py-24 sm:py-32 px-5 sm:px-8 max-w-6xl mx-auto"
+      >
+        <div className="glass p-10 sm:p-16 flex flex-col items-center justify-center text-center">
+          <Loader2 size={24} className="animate-spin text-[#00A3AD] mb-4" />
+          <p className="text-[#F4F4F4]/60 text-sm">
+            Loading admissions information…
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  if (settingsError) {
+    return (
+      <section
+        id="apply"
+        className="relative py-24 sm:py-32 px-5 sm:px-8 max-w-6xl mx-auto"
+      >
+        <div className="glass p-10 sm:p-16 text-center">
+          <AlertCircle size={28} className="text-[#D27D2D] mx-auto mb-4" />
+          <p className="text-[#F4F4F4]/70 text-sm max-w-md mx-auto">
+            {settingsError}
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  if (settings && !settings.is_open) {
+    return (
+      <section
+        id="apply"
+        className="relative py-24 sm:py-32 px-5 sm:px-8 max-w-6xl mx-auto"
+      >
+        <div className="glass p-10 sm:p-16 text-center">
+          <span className="w-14 h-14 mx-auto mb-6 rounded-2xl bg-white/[0.05] flex items-center justify-center">
+            <Lock size={22} className="text-[#F4F4F4]/50" />
+          </span>
+          <h2 className="font-display text-2xl sm:text-3xl tracking-tight mb-3">
+            ADMISSIONS ARE CURRENTLY CLOSED
+          </h2>
+          <p className="text-[#F4F4F4]/60 max-w-md mx-auto">
+            The {settings.intake_year} admissions window is not open at
+            the moment. Please check back later or contact the school
+            office for more information.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       id="apply"
@@ -545,7 +731,7 @@ export default function Admissions() {
 
       <div className="text-center mb-14">
         <p className="text-xs tracking-[0.3em] uppercase text-[#D27D2D] mb-5">
-          Online Admission Portal · 2027
+          Online Admission Portal · {settings?.intake_year}
         </p>
 
         <h2 className="font-display text-[clamp(2rem,5vw,3.5rem)] leading-[0.95] tracking-tight mb-5">
@@ -1148,14 +1334,14 @@ export default function Admissions() {
               )}
 
               <button
-  type="submit"
-  disabled={submitting}
-  className="portal-btn font-display text-sm tracking-wide px-9 py-4 bg-[#00A3AD] text-[#121416] disabled:opacity-30 disabled:cursor-not-allowed"
->
-  {submitting
-    ? 'Submitting Application...'
-    : 'Submit Application →'}
-</button>
+                type="submit"
+                disabled={submitting}
+                className="portal-btn font-display text-sm tracking-wide px-9 py-4 bg-[#00A3AD] text-[#121416] disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                {submitting
+                  ? 'Submitting Application...'
+                  : 'Submit Application →'}
+              </button>
 
             </div>
 
@@ -1447,7 +1633,7 @@ function SuccessCard({
       <div className="inline-block border border-[#D27D2D]/50 px-6 py-3 mb-8">
 
         <span className="text-xs tracking-widest uppercase text-[#F4F4F4]/50 block">
-          Application Reference
+          Admission Number
         </span>
 
         <span className="font-display text-xl cyan-acc">
@@ -1457,7 +1643,7 @@ function SuccessCard({
       </div>
 
       <p className="text-xs text-[#F4F4F4]/45 max-w-md mx-auto mb-8">
-        Please keep your application reference
+        Please keep your Admission Number
         number safe. You may need it when
         communicating with the school about
         your application.

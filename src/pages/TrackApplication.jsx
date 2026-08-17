@@ -16,13 +16,28 @@ const SEARCH_TYPES = [
   { value: 'id', label: 'ID Number' },
 ];
 
+const statusColor = (status) => {
+  switch (status) {
+    case 'Admitted':
+      return 'text-[#00A3AD] border-[#00A3AD]/50';
+    case 'Rejected':
+      return 'text-[#D27D2D] border-[#D27D2D]/50';
+    case 'Waitlisted':
+      return 'text-yellow-400 border-yellow-400/40';
+    case 'Under Review':
+      return 'text-blue-300 border-blue-300/40';
+    default:
+      return 'text-[#F4F4F4]/70 border-white/20';
+  }
+};
+
 export default function TrackApplication() {
   useReveal();
 
   const [searchType, setSearchType] = useState('reference');
   const [searchValue, setSearchValue] = useState('');
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
+  const [results, setResults] = useState(null);
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
 
@@ -37,7 +52,7 @@ export default function TrackApplication() {
 
     setLoading(true);
     setError('');
-    setResult(null);
+    setResults(null);
     setSearched(true);
 
     try {
@@ -51,11 +66,7 @@ export default function TrackApplication() {
         throw new Error('Something went wrong while searching. Please try again.');
       }
 
-      if (!data || data.length === 0) {
-        setResult(null);
-      } else {
-        setResult(data[0]);
-      }
+      setResults(data && data.length > 0 ? data : []);
     } catch (err) {
       setError(err.message || 'Something went wrong while searching. Please try again.');
     } finally {
@@ -87,8 +98,8 @@ export default function TrackApplication() {
             TRACK YOUR <span className="ochre">APPLICATION</span>
           </h1>
           <p className="text-[#F4F4F4]/60 mt-5 max-w-xl mx-auto">
-            Enter your Admission Number or ID Number below to check the status of your
-            application to Mhlanga Senior Secondary School.
+            Enter your Admission Number or ID Number below to check the status of every
+            application you've submitted to Mhlanga Senior Secondary School.
           </p>
         </div>
 
@@ -132,7 +143,7 @@ export default function TrackApplication() {
                   style={{ paddingLeft: '1.75rem' }}
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
-                  placeholder={searchType === 'reference' ? 'e.g. MSS-123456' : '13-digit SA ID number'}
+                  placeholder={searchType === 'reference' ? 'e.g. MSS-100001' : '13-digit SA ID number'}
                 />
               </div>
             </div>
@@ -156,7 +167,7 @@ export default function TrackApplication() {
             </div>
           )}
 
-          {searched && !error && !result && !loading && (
+          {searched && !error && results && results.length === 0 && !loading && (
             <div className="mt-6 border border-white/10 bg-white/[0.02] px-5 py-4">
               <p className="flex items-start gap-3 text-sm text-[#F4F4F4]/70">
                 <AlertCircle size={18} className="text-[#F4F4F4]/40 shrink-0 mt-0.5" />
@@ -168,34 +179,45 @@ export default function TrackApplication() {
             </div>
           )}
 
-          {result && (
+          {results && results.length > 0 && (
             <div className="mt-8 border-t border-white/10 pt-8">
               <div className="flex items-center gap-3 mb-6">
                 <span className="w-10 h-10 rounded-full bg-[#00A3AD] flex items-center justify-center shrink-0">
                   <CheckCircle2 size={18} className="text-[#121416]" />
                 </span>
                 <div>
-                  <div className="font-display text-lg tracking-tight">{result.full_name}</div>
-                  <div className="text-xs text-[#F4F4F4]/50">Application found</div>
+                  <div className="font-display text-lg tracking-tight">{results[0].full_name}</div>
+                  <div className="text-xs text-[#F4F4F4]/50">
+                    Admission Number: {results[0].admission_number} · {results.length} application{results.length > 1 ? 's' : ''} found
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <InfoRow icon={<Hash size={14} />} label="Admission Number" value={result.admission_number} />
-                <InfoRow icon={<GraduationCap size={14} />} label="Grade Applying For" value={result.grade_applying} />
-                {result.stream && (
-                  <InfoRow
-                    icon={<GraduationCap size={14} />}
-                    label="Stream"
-                    value={STREAM_LABELS[result.stream] || result.stream}
-                  />
-                )}
-                <InfoRow icon={<Calendar size={14} />} label="Submitted" value={formattedDate(result.submitted_at)} />
-              </div>
+              <div className="space-y-4">
+                {results.map((app, idx) => (
+                  <div key={idx} className="border border-white/10 bg-white/[0.02] p-5">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="font-display text-sm tracking-wide text-[#F4F4F4]/80">
+                        Intake {app.intake_year}
+                      </span>
+                      <span className={`text-xs tracking-widest uppercase px-3 py-1.5 border ${statusColor(app.status)}`}>
+                        {app.status}
+                      </span>
+                    </div>
 
-              <div className="mt-6 inline-block border border-[#00A3AD]/50 px-6 py-3">
-                <span className="text-xs tracking-widest uppercase text-[#F4F4F4]/50 block">Current Status</span>
-                <span className="font-display text-lg cyan-acc">{result.status}</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <InfoRow icon={<GraduationCap size={14} />} label="Grade Applying For" value={app.grade_applying} />
+                      {app.stream && (
+                        <InfoRow
+                          icon={<GraduationCap size={14} />}
+                          label="Stream"
+                          value={STREAM_LABELS[app.stream] || app.stream}
+                        />
+                      )}
+                      <InfoRow icon={<Calendar size={14} />} label="Submitted" value={formattedDate(app.submitted_at)} />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

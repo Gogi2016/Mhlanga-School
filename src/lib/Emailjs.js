@@ -34,6 +34,7 @@ function ensureInit() {
  * {{to_email}}
  * {{to_name}}
  * {{ref_number}}
+ * {{intake_year}}
  * {{grade_applying}}
  * {{stream}}
  */
@@ -41,6 +42,7 @@ export async function sendApplicationReceivedEmail({
   toEmail,
   toName,
   ref,
+  intakeYear,
   gradeApplying,
   stream,
 }) {
@@ -69,6 +71,7 @@ export async function sendApplicationReceivedEmail({
     console.log('Email:', toEmail);
     console.log('Name:', toName);
     console.log('Reference:', ref);
+    console.log('Intake Year:', intakeYear || 'N/A');
     console.log('Grade:', gradeApplying);
     console.log('Stream:', stream || 'N/A');
 
@@ -79,6 +82,7 @@ export async function sendApplicationReceivedEmail({
         to_email: toEmail,
         to_name: toName,
         ref_number: ref,
+        intake_year: intakeYear || 'N/A',
         grade_applying: gradeApplying,
         stream: stream || 'N/A',
       }
@@ -115,6 +119,7 @@ export async function sendApplicationReceivedEmail({
  * {{to_email}}
  * {{to_name}}
  * {{ref_number}}
+ * {{intake_year}}
  * {{status}}
  * {{admission_number}}
  * {{grade_applying}}
@@ -124,6 +129,7 @@ export async function sendStatusUpdateEmail({
   toEmail,
   toName,
   ref,
+  intakeYear,
   status,
   admissionNumber,
   gradeApplying,
@@ -154,6 +160,7 @@ export async function sendStatusUpdateEmail({
     console.log('Email:', toEmail);
     console.log('Name:', toName);
     console.log('Reference:', ref);
+    console.log('Intake Year:', intakeYear || 'N/A');
     console.log('Status:', status);
     console.log(
       'Admission Number:',
@@ -169,6 +176,7 @@ export async function sendStatusUpdateEmail({
         to_email: toEmail,
         to_name: toName,
         ref_number: ref,
+        intake_year: intakeYear || 'N/A',
         status,
         admission_number:
           admissionNumber || 'N/A',
