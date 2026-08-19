@@ -1,20 +1,34 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <script>
-      // Single Page App GitHub Pages redirect trick
-      var segmentCount = 1; // matches /Mhlanga-School/ base path depth
-      var l = window.location;
-      l.replace(
-        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-        l.pathname.split('/').slice(0, 1 + segmentCount).join('/') +
-        '/?/' +
-        l.pathname.slice(1).split('/').slice(segmentCount).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
-    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Mhlanga Senior Secondary School — Lusikisiki District, Mtontsasa Circuit, Eastern Cape. The pathway to excellence. Apply online for admission."
+    />
+
+    <!-- Website Favicon -->
+  <link rel="icon" type="image/png" href="/Mhlanga-School/images/bagge.jpg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>Mhlanga SS</title>
+    <script type="module" crossorigin src="/Mhlanga-School/assets/index-B5G5sqLr.js"></script>
+    <link rel="stylesheet" crossorigin href="/Mhlanga-School/assets/index-CNqHvg6n.css">
   </head>
-  <body></body>
+
+  <body>
+    <div id="root"></div>
+  </body>
 </html>
