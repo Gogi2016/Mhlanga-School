@@ -6,25 +6,25 @@ const QUOTES = [
     text: 'I am proud to be a product of this school. The education was more than academic — it was a holistic experience that shaped the person I am today.',
     name: 'Zingisa Gogi',
     role: 'Class of 2025',
-    photo: '/images/Zingy.jpeg',
+    photo: `${import.meta.env.BASE_URL}images/Zingy.jpeg`,
   },
   {
     text: 'I am glad I chose Mhlanga for my high school journey. It was the best decision I ever made — it helped me achieve my goals.',
     name: 'Zisanda Gogi',
     role: 'Class of 2024',
-    photo: '/images/Mphenqe.jpeg',
+    photo: `${import.meta.env.BASE_URL}images/Mphenqe.jpeg`,
   },
   {
     text: 'The teachers genuinely care about their students and want to see them succeed. I have learned so much here.',
     name: 'Andisiwe Nkayitshana',
     role: 'Class of 2023',
-    photo: '/images/matric.jpg',
+    photo: `${import.meta.env.BASE_URL}images/matric.jpg`,
   },
   {
     text: 'I have never felt so supported and empowered as an educator. The administration truly values its teachers.',
     name: 'Miss Ndengezi',
     role: 'Educator',
-    photo: '/images/herii.jpg',
+    photo: `${import.meta.env.BASE_URL}images/herii.jpg`,
   },
 ];
 

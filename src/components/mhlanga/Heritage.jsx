@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image } from '@/components/ui/image';
 
-const PORTRAIT = '/images/Zingy.jpeg';
+const PORTRAIT = `${import.meta.env.BASE_URL}images/Zingy.jpeg`;
 const ARCH = 'https://media.base44.com/images/public/6a7e1de32b26888cf5755e75/2d605f5db_generated_7814401f.png';
 
 const STATS = [

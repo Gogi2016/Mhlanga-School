@@ -16,12 +16,12 @@ const SLIDES = [
     title: ['UNLOCKING POTENTIAL,', 'UNLEASHING DREAMS.'],
     sub: 'A disciplined, no-fee public school where every learner is met where they are and guided toward their horizon.',
   },
-  {
-    img: '/images/Zingy.jpeg',
-    eyebrow: 'Learn · Grow · Achieve Success',
-    title: ['WHERE RISING', 'BECOMES ROUTINE.'],
-    sub: 'Skilled teachers, personalised support, and extra classes that bridge the gap — building futures from the hills of Mtontsasa.',
-  },
+ {
+  img: `${import.meta.env.BASE_URL}images/Zingy.jpeg`,
+  eyebrow: 'Learn · Grow · Achieve Success',
+  title: ['WHERE RISING', 'BECOMES ROUTINE.'],
+  sub: 'Skilled teachers, personalised support, and extra classes that bridge the gap — building futures from the hills of Mtontsasa.',
+},
 ];
 
 export default function Hero() {

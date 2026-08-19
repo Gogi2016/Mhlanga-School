@@ -8,40 +8,40 @@ const CATEGORIES = ['All', 'School Activities', 'Matric Farewell', 'Achievements
 
 const MEDIA = [
   // School Activities
-  { type: 'image', src: '/images/herii.jpg', category: 'School Activities' },
-  { type: 'image', src: '/images/heritage.jpg', category: 'School Activities' },
-  { type: 'image', src: '/images/heritage 1.jpg', category: 'School Activities' },
-  { type: 'image', src: '/images/dun her.jpg', category: 'School Activities' },
-  { type: 'image', src: '/images/career.jpg', category: 'School Activities' },
-  { type: 'image', src: '/images/career 2.jpg', category: 'School Activities' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/herii.jpg`, category: 'School Activities' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/heritage.jpg`, category: 'School Activities' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/heritage 1.jpg`, category: 'School Activities' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/dun her.jpg`, category: 'School Activities' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/career.jpg`, category: 'School Activities' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/career 2.jpg`, category: 'School Activities' },
   {
     type: 'video',
-    src: '/videos/school-activities-1.mp4',
+    src: `${import.meta.env.BASE_URL}videos/school-activities-1.mp4`,
     poster: 'https://media.base44.com/images/public/6a7e1de32b26888cf5755e75/3b5af1a3e_generated_image.png',
     caption: 'Collaboration on the grounds',
     category: 'School Activities',
   },
 
   // Matric Farewell
-  { type: 'image', src: '/images/matric.jpg', category: 'Matric Farewell' },
-  { type: 'image', src: '/images/Tie ceremony.webp', category: 'Matric Farewell' },
-  { type: 'image', src: '/images/grade 12.jpg', category: 'Matric Farewell' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/matric.jpg`, category: 'Matric Farewell' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/Tie ceremony.webp`, category: 'Matric Farewell' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/grade 12.jpg`, category: 'Matric Farewell' },
   {
     type: 'video',
-    src: '/videos/matric-farewell-1.mp4',
+    src: `${import.meta.env.BASE_URL}videos/matric-farewell-1.mp4`,
     poster: 'https://media.base44.com/images/public/6a7e1de32b26888cf5755e75/47649e2b1_generated_b778c529.png',
     caption: 'Matric Farewell 2025 highlights',
     category: 'Matric Farewell',
   },
 
   // Achievements
-  { type: 'image', src: '/images/achivements.jpg', category: 'Achievements' },
-  { type: 'image', src: '/images/achiveeee.jpg', category: 'Achievements' },
-  { type: 'image', src: '/images/achivement 2.jpg', category: 'Achievements' },
-  { type: 'image', src: '/images/achive.jpg', category: 'Achievements' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/achivements.jpg`, category: 'Achievements' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/achiveeee.jpg`, category: 'Achievements' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/achivement 2.jpg`, category: 'Achievements' },
+  { type: 'image', src: `${import.meta.env.BASE_URL}images/achive.jpg`, category: 'Achievements' },
   {
     type: 'video',
-    src: '/videos/achievements-1.mp4',
+    src: `${import.meta.env.BASE_URL}videos/achievements-1.mp4`,
     poster: 'https://media.base44.com/images/public/6a7e1de32b26888cf5755e75/65d47057d_generated_62a08246.png',
     caption: 'Celebrating our top achievers',
     category: 'Achievements',

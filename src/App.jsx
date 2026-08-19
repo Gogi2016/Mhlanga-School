@@ -6,7 +6,7 @@ import PageNotFound from './lib/PageNotFound';
 import ScrollToTop from './components/ScrollToTop';
 import AdmissionsBanner from './components/AdmissionsBanner';
 import AdminRoute from './components/AdminRoute';
-// Add page imports here
+
 import Home from '@/pages/Home';
 import Gallery from '@/pages/Gallery';
 import AdmissionsPage from '@/pages/AdmissionsPage';
@@ -17,9 +17,10 @@ import AdminDashboard from '@/pages/AdminDashboard';
 function App() {
   return (
     <QueryClientProvider client={queryClientInstance}>
-      <Router>
+      <Router basename="/Mhlanga-School">
         <ScrollToTop />
         <AdmissionsBanner />
+
         <div style={{ paddingTop: 'var(--announcement-height, 0px)' }}>
           <Routes>
             <Route path="/" element={<Home />} />
@@ -27,6 +28,7 @@ function App() {
             <Route path="/admissions" element={<AdmissionsPage />} />
             <Route path="/track-application" element={<TrackApplication />} />
             <Route path="/admin/login" element={<AdminLogin />} />
+
             <Route
               path="/admin/dashboard"
               element={
@@ -35,10 +37,12 @@ function App() {
                 </AdminRoute>
               }
             />
+
             <Route path="*" element={<PageNotFound />} />
           </Routes>
         </div>
       </Router>
+
       <Toaster />
     </QueryClientProvider>
   )
